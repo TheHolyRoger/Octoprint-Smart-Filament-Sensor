@@ -133,6 +133,7 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
         if self.motion_sensor_enabled == False:
             self._logger.info("Motion sensor is deactivated")
 
+        self._sendDataToClient(EVENT_KEY_MOVEMENT, dict(movement_detected=False), skip_check=True)
         self._data.filament_moving = False
         self.motion_sensor_thread = None
 
@@ -229,6 +230,7 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
                     self._logger.info("Motion sensor started: Timeout detection")
 
             self.send_code = False
+            self._sendDataToClient(EVENT_KEY_MOVEMENT, dict(movement_detected=True), skip_check=True)
             self._data.filament_moving = True
 
     # Stop the motion_sensor thread
