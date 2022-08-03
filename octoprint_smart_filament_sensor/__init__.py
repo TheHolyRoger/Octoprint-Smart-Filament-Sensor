@@ -358,7 +358,7 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
 
                 # version check: github repository
                 type="github_release",
-                user="Royrdan",
+                user="TheHolyRoger",
                 repo="Octoprint-Smart-Filament-Sensor",
                 current=self._plugin_version,
 
@@ -379,7 +379,7 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
 				],
 
                 # update method: pip
-                pip="https://github.com/Royrdan/Octoprint-Smart-Filament-Sensor/archive/{target_version}.zip"
+                pip="https://github.com/TheHolyRoger/Octoprint-Smart-Filament-Sensor/archive/{target_version}.zip"
             )
         )
 
@@ -422,7 +422,7 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
 
 
 __plugin_name__ = "Smart Filament Sensor"
-__plugin_version__ = "1.2"
+__plugin_version__ = "1.3b2"
 __plugin_pythoncompat__ = ">=2.7,<4"
 
 def __plugin_load__():
