@@ -81,6 +81,25 @@
                 <span class="help-block"><small>GCode commands that are sent to the printer are interpreted. Don't choose this value too small, because it could make the detection too sensitive.</small></span>
             </div>
         </div>
+        <!-- Advanced -->
+        <h6>{{ _('Advanced') }}</h6>
+        <!-- Enable / Disable events -->
+        <div class="control-group">
+            <div class="controls" data-toggle="tooltip" title="{{ _('Enable event publishing.') }}">
+                <label class="checkbox">
+                    <input type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.smartfilamentsensor.enable_event_publishing"> {{ _('Enable event publishing (MQTT)') }}
+                </label>
+            </div>
+        </div>
+        <!-- Enable / Disable Remaining Ratio Publishing -->
+        <div class="control-group">
+            <div class="controls" data-toggle="tooltip" title="{{ _('Enable remaining ratio publishing.') }}">
+                <label class="checkbox">
+                    <input type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.smartfilamentsensor.enable_publish_remaining_ratio"> {{ _('Publish remaining filament ratio event') }}
+                </label>
+            </div>
+        </div>
+
         <!-- Connection test -->
         <h6>{{_('Connection Test') }}</h6>
         <div class="control-group">

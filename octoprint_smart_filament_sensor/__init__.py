@@ -1,7 +1,7 @@
 # coding=utf-8
 from __future__ import absolute_import
 import octoprint.plugin
-from octoprint.events import Events
+from octoprint.events import Events, eventManager
 import RPi.GPIO as GPIO
 from time import sleep
 from datetime import datetime
@@ -9,6 +9,12 @@ import flask
 import json
 from octoprint_smart_filament_sensor.filament_motion_sensor_timeout_detection import FilamentMotionSensorTimeoutDetection
 from octoprint_smart_filament_sensor.data import SmartFilamentSensorDetectionData
+
+PLUGIN_KEY_PREFIX = "SmartFilamentSensor_"
+
+EVENT_KEY_MOVEMENT = "Movement"
+EVENT_KEY_FILAMENT_CHANGE = "FilamentChange"
+EVENT_KEY_REMAIN_RATIO = "RemainRatio"
 
 class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
                                  octoprint.plugin.EventHandlerPlugin,
@@ -56,6 +62,16 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
     @property
     def motion_sensor_detection_distance(self):
         return int(self._settings.get(["motion_sensor_detection_distance"]))
+
+#Event Publishing
+
+    @property
+    def enable_event_publishing(self):
+        return self._settings.get_boolean(["enable_event_publishing"])
+
+    @property
+    def enable_publish_remaining_ratio(self):
+        return self._settings.get_boolean(["enable_publish_remaining_ratio"])
 
 #Timeout detection
     @property
@@ -117,6 +133,8 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
             motion_sensor_enabled = True, #Sensor detection is enabled by default
             motion_sensor_pin=-1,  # Default is no pin
             detection_method = 0, # 0 = timeout detection, 1 = distance detection
+            enable_event_publishing = True,
+            enable_publish_remaining_ratio = True,
 
             # Distance detection
             motion_sensor_detection_distance = 15, # Recommended detection distance from Marlin would be 7
@@ -202,15 +220,18 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
         # Check if stop signal was already sent
         if(not self.send_code):
             self._logger.error("Motion sensor detected no movement")
+            self._sendDataToClient(EVENT_KEY_MOVEMENT, dict(movement_detected=False), skip_check=True)
             self._logger.info("Pause command: " + self.pause_command)
             self._printer.commands(self.pause_command)
             self.send_code = True
+            self._sendDataToClient(EVENT_KEY_FILAMENT_CHANGE, dict(printer_change_filament=True), skip_check=True)
             self._data.filament_moving = False
             self.lastE = -1 # Set to -1 so it ignores the first test then continues
 
     # Reset the distance, if the remaining distance is smaller than the new value
     def reset_distance (self, pPin):
         self._logger.debug("Motion sensor detected movement")
+        self._sendDataToClient(EVENT_KEY_MOVEMENT, dict(movement_detected=True), skip_check=True)
         self.send_code = False
         self.last_movement_time = datetime.now()
         if(self._data.remaining_distance < self.motion_sensor_detection_distance):
@@ -231,6 +252,13 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
     # Calculate the remaining distance
     def calc_distance(self, pE):
         if (self.detection_method == 1):
+
+            if self.enable_publish_remaining_ratio:
+                try:
+                    remain_ratio = (self._data.remaining_distance / self.motion_sensor_detection_distance)
+                    self._sendDataToClient(EVENT_KEY_REMAIN_RATIO, dict(remaining_ratio=remain_ratio))
+                except Exception as e:
+                    self._logger.error(f"Error in publish ratio: {e}")
 
             # First check if need continue after last move
             if(self._data.remaining_distance > 0):
@@ -273,6 +301,17 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
                     self.printer_change_filament()
                 else:
                     self._logger.debug("Ignored pause command due to 5 second rule")
+
+    _lastSendClientData = dict()
+
+    def _sendDataToClient(self, event_id, dataDict, skip_check=False):
+        if self.enable_event_publishing:
+            if (self._lastSendClientData != dataDict) or skip_check:
+                eventKey = PLUGIN_KEY_PREFIX + event_id
+                eventManager().fire(eventKey, dataDict)
+                self._lastSendClientData = dataDict
+            else:
+                self._logger.info("Ignoring send data, duplicated dict:" + str(dataDict))
 
     def updateToUi(self):
         self._plugin_manager.send_plugin_message(self._identifier, self._data.toJSON())
