@@ -83,6 +83,14 @@
         </div>
         <!-- Advanced -->
         <h6>{{ _('Advanced') }}</h6>
+        <!-- Enable / Disable skip pause while moving -->
+        <div class="control-group">
+            <div class="controls" data-toggle="tooltip" title="{{ _('Skip pause while filament is moving.') }}">
+                <label class="checkbox">
+                    <input type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.smartfilamentsensor.skip_pause_while_moving"> {{ _('Skip pause while moving and reset distance.') }}
+                </label>
+            </div>
+        </div>
         <!-- Enable / Disable events -->
         <div class="control-group">
             <div class="controls" data-toggle="tooltip" title="{{ _('Enable event publishing.') }}">

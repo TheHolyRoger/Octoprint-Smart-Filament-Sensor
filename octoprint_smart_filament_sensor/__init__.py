@@ -14,6 +14,7 @@ PLUGIN_KEY_PREFIX = "SmartFilamentSensor_"
 
 EVENT_KEY_MOVEMENT = "Movement"
 EVENT_KEY_FILAMENT_CHANGE = "FilamentChange"
+EVENT_KEY_PAUSE_IGNORED = "PauseIgnored"
 EVENT_KEY_REMAIN_RATIO = "RemainRatio"
 
 class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
@@ -57,6 +58,10 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
     @property
     def pause_command(self):
         return self._settings.get(["pause_command"])
+
+    @property
+    def skip_pause_while_moving(self):
+        return self._settings.get_boolean(["skip_pause_while_moving"])
 
 #Distance detection
     @property
@@ -135,6 +140,7 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
             detection_method = 0, # 0 = timeout detection, 1 = distance detection
             enable_event_publishing = True,
             enable_publish_remaining_ratio = True,
+            skip_pause_while_moving = False,
 
             # Distance detection
             motion_sensor_detection_distance = 15, # Recommended detection distance from Marlin would be 7
@@ -295,6 +301,10 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
                 )
                 self._data.remaining_distance = (self._data.remaining_distance - deltaDistance)
 
+            elif self._data.filament_moving and self.skip_pause_while_moving:
+                self._sendDataToClient(EVENT_KEY_PAUSE_IGNORED, dict(pause_ignored=True))
+                self._logger.debug("Ignored pause command due to filament moving")
+                self.reset_distance(None)
             else:
                 # Only pause the print if its been over 5 seconds since the last movement. Stops pausing when the CPU gets hung up.
                 if (datetime.now() - self.last_movement_time).total_seconds() > 10:
