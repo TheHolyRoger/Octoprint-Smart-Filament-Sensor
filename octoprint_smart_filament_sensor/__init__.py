@@ -230,6 +230,9 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
                     self._logger.info("Motion sensor started: Timeout detection")
 
             self.send_code = False
+            if self.skip_pause_while_moving:
+                self._sendDataToClient(EVENT_KEY_PAUSE_IGNORED, dict(pause_ignored=False))
+            self._sendDataToClient(EVENT_KEY_FILAMENT_CHANGE, dict(printer_change_filament=False), skip_check=True)
             self._sendDataToClient(EVENT_KEY_MOVEMENT, dict(movement_detected=True), skip_check=True)
             self._data.filament_moving = True
 
