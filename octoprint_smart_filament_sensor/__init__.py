@@ -285,7 +285,7 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
 
             if self.enable_publish_remaining_ratio:
                 try:
-                    remain_ratio = (int((self._data.remaining_distance / self.motion_sensor_detection_distance) * 1e4) / 1e4)
+                    remain_ratio = min((int((self._data.remaining_distance / self.motion_sensor_detection_distance) * 1e4) / 1e4), 1.0)
                     self._sendDataToClient(EVENT_KEY_REMAIN_RATIO, dict(remaining_ratio=remain_ratio))
                 except Exception as e:
                     self._logger.error(f"Error in publish ratio: {e}")
