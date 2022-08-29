@@ -358,7 +358,7 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
                 eventManager().fire(eventKey, dataDict)
                 self._lastSendClientData = dataDict
             else:
-                self._logger.info("Ignoring send data, duplicated dict:" + str(dataDict))
+                self._logger.debug("Ignoring send data, duplicated dict:" + str(dataDict))
 
     def updateToUi(self):
         self._plugin_manager.send_plugin_message(self._identifier, self._data.toJSON())
