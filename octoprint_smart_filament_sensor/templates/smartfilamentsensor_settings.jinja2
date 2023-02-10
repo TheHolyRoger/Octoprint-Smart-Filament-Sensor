@@ -93,8 +93,8 @@
             </div>
         </div>
         <div class="control-group">
-            <div class="controls">
             <label class="control-label">{{ _('Remaining Filament Threshold') }}</label>
+            <div class="controls">
                 <div class="input-append" data-toggle="tooltip" title="{{ _('The threshold below which the periodic reset will kick in.') }}">
                     <input type="number" step="any" min="0" class="input-mini text-right" data-bind="value: settingsViewModel.settings.plugins.smartfilamentsensor.motion_sensor_reset_remaining_ratio">
                     <span class="add-on">%</span>
@@ -102,8 +102,8 @@
             </div>
         </div>
         <div class="control-group">
-            <div class="controls">
             <label class="control-label">{{ _('Reset Interval') }}</label>
+            <div class="controls">
                 <div class="input-append" data-toggle="tooltip" title="{{ _('The interval at which the periodic reset is allowed to trigger, in seconds.') }}">
                     <input type="number" step="any" min="0" class="input-mini text-right" data-bind="value: settingsViewModel.settings.plugins.smartfilamentsensor.motion_sensor_reset_interval">
                     <span class="add-on">sec</span>
