@@ -23,6 +23,7 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
                                  octoprint.plugin.SettingsPlugin,
                                  octoprint.plugin.AssetPlugin,
                                  octoprint.plugin.SimpleApiPlugin):
+    _last_event_publish_data = dict()
 
     def initialize(self):
         self._logger.info("Running RPi.GPIO version '{0}'".format(GPIO.VERSION))
@@ -32,6 +33,8 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
 
         self.print_started = False
         self.last_movement_time = None
+        self._last_event_publish_data = dict()
+        self._last_event_publish_time = None
         self.last_reset_time = datetime.now()
         self.lastE = -1
         self.currentE = -1
@@ -78,6 +81,10 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
     @property
     def enable_publish_remaining_ratio(self):
         return self._settings.get_boolean(["enable_publish_remaining_ratio"])
+
+    @property
+    def event_publish_interval_remaining_ratio(self):
+        return int(self._settings.get(["event_publish_interval_remaining_ratio"]))
 
 #Periodic Reset
 
@@ -156,6 +163,7 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
             detection_method = 0, # 0 = timeout detection, 1 = distance detection
             enable_event_publishing = True,
             enable_publish_remaining_ratio = True,
+            event_publish_interval_remaining_ratio = 5,
             skip_pause_while_moving = False,
 
             # Distance detection
@@ -349,14 +357,26 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
                 else:
                     self._logger.debug("Ignored pause command due to 5 second rule")
 
-    _lastSendClientData = dict()
+    def _checkShouldPublish(self, event_id, dataDict, skip_check=False):
+        if skip_check:
+            return True
+        if self._last_event_publish_data != dataDict:
+            if event_id != EVENT_KEY_REMAIN_RATIO:
+                return True
+            if not self._last_event_publish_time:
+                return True
+            last_publish_diff = (datetime.now() - self._last_event_publish_time).total_seconds()
+            if last_publish_diff > self.event_publish_interval_remaining_ratio:
+                return True
+        return False
 
     def _sendDataToClient(self, event_id, dataDict, skip_check=False):
         if self.enable_event_publishing:
-            if (self._lastSendClientData != dataDict) or skip_check:
+            if self._checkShouldPublish(event_id, dataDict, skip_check):
                 eventKey = PLUGIN_KEY_PREFIX + event_id
                 eventManager().fire(eventKey, dataDict)
-                self._lastSendClientData = dataDict
+                self._last_event_publish_data = dataDict
+                self._last_event_publish_time = datetime.now()
             else:
                 self._logger.debug("Ignoring send data, duplicated dict:" + str(dataDict))
 
