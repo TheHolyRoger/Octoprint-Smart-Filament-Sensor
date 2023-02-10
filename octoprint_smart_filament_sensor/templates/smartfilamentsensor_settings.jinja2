@@ -93,6 +93,7 @@
         </div>
         <!-- Enable / Disable events -->
         <div class="control-group">
+            <label class="control-label">{{ _('MQTT Event Publishing:') }}</label>
             <div class="controls" data-toggle="tooltip" title="{{ _('Enable event publishing.') }}">
                 <label class="checkbox">
                     <input type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.smartfilamentsensor.enable_event_publishing"> {{ _('Enable event publishing (MQTT)') }}
@@ -101,10 +102,21 @@
         </div>
         <!-- Enable / Disable Remaining Ratio Publishing -->
         <div class="control-group">
+            <label class="control-label">{{ _('Remain Ratio Publishing:') }}</label>
             <div class="controls" data-toggle="tooltip" title="{{ _('Enable remaining ratio publishing.') }}">
                 <label class="checkbox">
                     <input type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.smartfilamentsensor.enable_publish_remaining_ratio"> {{ _('Publish remaining filament ratio event') }}
                 </label>
+            </div>
+        </div>
+        <!-- Interval Between Remaining Ratio Publishing -->
+        <div class="control-group">
+            <label class="control-label">{{ _('Remain Ratio Interval:') }}</label>
+            <div class="controls">
+                <div class="input-append" data-toggle="tooltip" title="{{ _('Interval between Remaining Ratio Publishing.') }}">
+                    <input type="number" step="any" min="0" class="input-mini text-right" data-bind="value: settingsViewModel.settings.plugins.smartfilamentsensor.event_publish_interval_remaining_ratio">
+                    <span class="add-on">sec</span>
+                </div>
             </div>
         </div>
 
